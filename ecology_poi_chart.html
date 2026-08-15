@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>灵境秘境 · 生态 POI 线图规划</title>
+<style>
+  :root {
+    --bg-deep:   #0b0a1f;
+    --bg-mid:    #1a1340;
+    --bg-soft:   #2a1d5e;
+    --accent-1:  #c5a3ff; /* 灵光紫 */
+    --accent-2:  #4ecdc4; /* 灵泉蓝 */
+    --accent-3:  #ff8c69; /* 晚霞橙 */
+    --accent-4:  #7fffd4; /* 生机青 */
+    --text:      #ece6ff;
+    --text-soft: #b8aedb;
+    --line:      rgba(197,163,255,.55);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(78,205,196,.18), transparent 55%),
+      radial-gradient(ellipse at 80% 90%, rgba(255,140,105,.18), transparent 55%),
+      linear-gradient(180deg, #0b0a1f 0%, #1a1340 60%, #0b0a1f 100%);
+    color: var(--text);
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    min-height: 100vh;
+    line-height: 1.65;
+  }
+  header {
+    padding: 48px 6vw 24px;
+    text-align: center;
+    border-bottom: 1px solid rgba(197,163,255,.18);
+  }
+  header .tag {
+    display: inline-block;
+    padding: 4px 14px;
+    border: 1px solid var(--accent-1);
+    color: var(--accent-1);
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 18px;
+  }
+  header h1 {
+    font-size: 36px;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 10px;
+  }
+  header p { color: var(--text-soft); font-size: 15px; max-width: 720px; margin: 0 auto; }
+  main {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 36px 6vw 80px;
+  }
+  section { margin-bottom: 56px; }
+  .section-title {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 20px; font-weight: 600;
+    color: var(--accent-1);
+    margin-bottom: 20px;
+  }
+  .section-title::before {
+    content: ""; display: inline-block;
+    width: 6px; height: 22px;
+    background: linear-gradient(180deg, var(--accent-1), var(--accent-2));
+    border-radius: 4px;
+  }
+
+  /* POI 卡片 */
+  .poi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .poi-card {
+    background: linear-gradient(160deg, rgba(42,29,94,.85), rgba(11,10,31,.85));
+    border: 1px solid rgba(197,163,255,.25);
+    border-radius: 14px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s, border-color .25s;
+  }
+  .poi-card:hover { transform: translateY(-3px); border-color: var(--accent-2); }
+  .poi-card::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle at 80% 0%, rgba(78,205,196,.18), transparent 60%);
+    pointer-events: none;
+  }
+  .poi-id {
+    font-family: "Cascadia Code", "JetBrains Mono", monospace;
+    color: var(--accent-2); font-size: 12px;
+    letter-spacing: 1.5px;
+  }
+  .poi-name {
+    font-size: 18px; font-weight: 600;
+    margin: 4px 0 10px;
+    color: #fff;
+  }
+  .poi-meta {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid currentColor;
+  }
+  .badge.nature { color: var(--accent-4); }
+  .badge.culture { color: var(--accent-3); }
+  .badge.mystic { color: var(--accent-1); }
+  .badge.view   { color: var(--accent-2); }
+  .poi-desc { color: var(--text-soft); font-size: 13px; }
+  .poi-coord {
+    margin-top: 10px;
+    font-family: "Cascadia Code", monospace;
+    color: rgba(197,163,255,.55);
+    font-size: 11px;
+  }
+
+  /* 线图容器 */
+  .chart-wrap {
+    background: rgba(11,10,31,.6);
+    border: 1px solid rgba(197,163,255,.2);
+    border-radius: 16px;
+    padding: 18px;
+    overflow: hidden;
+  }
+  svg { width: 100%; height: auto; display: block; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 18px;
+    margin-top: 14px; padding: 0 8px;
+    color: var(--text-soft); font-size: 13px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i {
+    display: inline-block; width: 18px; height: 3px; border-radius: 2px;
+  }
+
+  /* 路线表 */
+  .route-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
+  }
+  .route-card {
+    background: linear-gradient(160deg, rgba(42,29,94,.7), rgba(11,10,31,.7));
+    border: 1px solid rgba(78,205,196,.25);
+    border-radius: 14px;
+    padding: 20px 22px;
+  }
+  .route-card h3 {
+    font-size: 17px; color: var(--accent-4);
+    margin-bottom: 6px;
+  }
+  .route-card .duration {
+    color: var(--text-soft); font-size: 12px; margin-bottom: 14px;
+  }
+  .route-steps {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .step {
+    padding: 4px 10px;
+    background: rgba(197,163,255,.1);
+    border: 1px solid rgba(197,163,255,.35);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--accent-1);
+  }
+  .step.arrow { border: none; background: none; color: var(--accent-2); padding: 4px 2px; }
+
+  /* 规划建议 */
+  .plan-table {
+    width: 100%; border-collapse: collapse;
+    background: rgba(11,10,31,.6);
+    border-radius: 14px; overflow: hidden;
+  }
+  .plan-table th, .plan-table td {
+    padding: 12px 16px; text-align: left; font-size: 13px;
+    border-bottom: 1px solid rgba(197,163,255,.12);
+  }
+  .plan-table th {
+    background: rgba(78,205,196,.1);
+    color: var(--accent-2);
+    font-weight: 600; letter-spacing: 1px;
+  }
+  .plan-table td { color: var(--text-soft); }
+  .plan-table tr:last-child td { border-bottom: none; }
+  .plan-table tr:hover td { background: rgba(197,163,255,.05); color: var(--text); }
+
+  footer {
+    text-align: center;
+    color: var(--text-soft);
+    padding: 30px 0;
+    font-size: 12px;
+    border-top: 1px solid rgba(197,163,255,.12);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">ECOLOGY · POI · LINE CHART</div>
+  <h1>灵境秘境 · 生态 POI 线图规划</h1>
+  <p>基于画面中的奇幻生态意象，提炼出 <b>10 个核心 POI 节点</b>，以 <b>2 条主环线 + 3 条支线</b> 构建完整的生态游览 / 关卡行进路径，节点之间以"能耗·景观·叙事"三维度关联。</p>
+</header>
+
+<main>
+
+  <!-- 一、POI 节点清单 -->
+  <section>
+    <div class="section-title">一、POI 节点清单（共 10 个生态锚点）</div>
+    <div class="poi-grid">
+      <div class="poi-card">
+        <div class="poi-id">P01 · ENTRY</div>
+        <div class="poi-name">守望者之台</div>
+        <div class="poi-meta"><span class="badge view">观景</span><span class="badge mystic">神秘</span></div>
+        <div class="poi-desc">画面右下角孤身伫立的旅人所在的悬崖，作为整个秘境入口。视野开阔，可俯瞰全景。</div>
+        <div class="poi-coord">坐标 · A1 · 海拔最高</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P02 · FLORA</div>
+        <div class="poi-name">紫晶花海</div>
+        <div class="poi-meta"><span class="badge nature">自然</span></div>
+        <div class="poi-desc">前景低视角的紫色花田，象征生命基底与季节节奏，是进入秘境前最具仪式感的过渡带。</div>
+        <div class="poi-coord">坐标 · A2 · 低海拔</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P03 · TRAIL</div>
+        <div class="poi-name">古木栈道</div>
+        <div class="poi-meta"><span class="badge nature">自然</span><span class="badge culture">人文</span></div>
+        <div class="poi-desc">前景蜿蜒的石径与古木根系，承担主要人流/视线的引导，是线性景观的脊柱。</div>
+        <div class="poi-coord">坐标 · B2 · 主干道</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P04 · HYDRO</div>
+        <div class="poi-name">飞瀑流光</div>
+        <div class="poi-meta"><span class="badge nature">自然</span><span class="badge mystic">神秘</span></div>
+        <div class="poi-desc">画面中段多条蓝色发光瀑布，水声 + 灵光是核心听觉 / 视觉奇观节点。</div>
+        <div class="poi-coord">坐标 · B3 · 中海拔</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P05 · HABITAT</div>
+        <div class="poi-name">山村秘境</div>
+        <div class="poi-meta"><span class="badge culture">人文</span></div>
+        <div class="poi-desc">瀑布环绕的山腰聚落，灯火点点的屋舍群，是休整、补给与居民叙事的中心。</div>
+        <div class="poi-coord">坐标 · B4 · 中海拔</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P06 · CORE</div>
+        <div class="poi-name">万古灵树</div>
+        <div class="poi-meta"><span class="badge mystic">神秘</span><span class="badge nature">自然</span></div>
+        <div class="poi-desc">画面正中央巨型发光神树，根系嵌入岩壁、枝冠遮天，是整个秘境的"灵脉核心"。</div>
+        <div class="poi-coord">坐标 · C4 · 核心</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P07 · SUMMIT</div>
+        <div class="poi-name">仙塔远眺</div>
+        <div class="poi-meta"><span class="badge view">观景</span><span class="badge culture">人文</span></div>
+        <div class="poi-desc">画面右侧远景高耸的尖塔与山峰，象征文明的远方眺望，是视野终点。</div>
+        <div class="poi-coord">坐标 · D5 · 高海拔</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P08 · MICROCLIMATE</div>
+        <div class="poi-name">云海观景</div>
+        <div class="poi-meta"><span class="badge nature">自然</span><span class="badge view">观景</span></div>
+        <div class="poi-desc">画面中下部的雾带与翻涌云海，是气候边界与视觉留白，提供"呼吸感"。</div>
+        <div class="poi-coord">坐标 · C5 · 高海拔</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P09 · GROTTO</div>
+        <div class="poi-name">灵泉石窟</div>
+        <div class="poi-meta"><span class="badge mystic">神秘</span><span class="badge nature">自然</span></div>
+        <div class="poi-desc">画面左下方岩壁内隐约的洞穴，承载地下水系与传说，是秘境叙事暗线。</div>
+        <div class="poi-coord">坐标 · B5 · 中海拔</div>
+      </div>
+      <div class="poi-card">
+        <div class="poi-id">P10 · SKY</div>
+        <div class="poi-name">浮岛幽境</div>
+        <div class="poi-meta"><span class="badge mystic">神秘</span><span class="badge view">观景</span></div>
+        <div class="poi-desc">画面右上天空漂浮的山体与飞鸟群，构建立体垂直维度的奇观，是探险终点。</div>
+        <div class="poi-coord">坐标 · D4 · 空中</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 二、生态 POI 线图（连接关系） -->
+  <section>
+    <div class="section-title">二、生态 POI 连接线图</div>
+    <div class="chart-wrap">
+      <svg viewBox="0 0 1100 620" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gMain" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"  stop-color="#c5a3ff"/>
+            <stop offset="50%" stop-color="#4ecdc4"/>
+            <stop offset="100%" stop-color="#ff8c69"/>
+          </linearGradient>
+          <linearGradient id="gSide" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#4ecdc4"/>
+            <stop offset="100%" stop-color="#7fffd4"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2.4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- 背景网格 -->
+        <g opacity=".12" stroke="#c5a3ff" stroke-width="1">
+          <line x1="0"   y1="100" x2="1100" y2="100"/>
+          <line x1="0"   y1="200" x2="1100" y2="200"/>
+          <line x1="0"   y1="300" x2="1100" y2="300"/>
+          <line x1="0"   y1="400" x2="1100" y2="400"/>
+          <line x1="0"   y1="500" x2="1100" y2="500"/>
+          <line x1="200" y1="0"   x2="200"  y2="620"/>
+          <line x1="400" y1="0"   x2="400"  y2="620"/>
+          <line x1="600" y1="0"   x2="600"  y2="620"/>
+          <line x1="800" y1="0"   x2="800"  y2="620"/>
+          <line x1="1000" y1="0"  x2="1000" y2="620"/>
+        </g>
+
+        <!-- 主环线：晨曦线（紫→蓝） -->
+        <path d="M 120,120 C 200,260 280,300 380,360 S 600,420 720,380"
+              fill="none" stroke="url(#gMain)" stroke-width="3.4"
+              stroke-linecap="round" filter="url(#glow)"/>
+        <!-- 主环线：黄昏线（橙反向） -->
+        <path d="M 720,380 C 820,340 880,300 960,220 S 980,140 940,90"
+              fill="none" stroke="url(#gMain)" stroke-width="3.4"
+              stroke-linecap="round" filter="url(#glow)"/>
+        <!-- 支线 -->
+        <path d="M 380,360 C 320,440 220,500 140,540"
+              fill="none" stroke="url(#gSide)" stroke-width="2.2"
+              stroke-dasharray="6 4" filter="url(#glow)"/>
+        <path d="M 600,420 C 640,500 720,540 820,560"
+              fill="none" stroke="url(#gSide)" stroke-width="2.2"
+              stroke-dasharray="6 4" filter="url(#glow)"/>
+        <path d="M 720,380 C 760,260 840,200 880,120"
+              fill="none" stroke="url(#gSide)" stroke-width="2.2"
+              stroke-dasharray="6 4" filter="url(#glow)"/>
+
+        <!-- 连线标签（关联属性） -->
+        <g font-family="Cascadia Code, monospace" font-size="11" fill="#b8aedb">
+          <text x="260" y="290" fill="#c5a3ff">视廊 · 1.2km</text>
+          <text x="450" y="340" fill="#4ecdc4">水声 · 0.6km</text>
+          <text x="640" y="410" fill="#4ecdc4">根系 · 0.4km</text>
+          <text x="820" y="320" fill="#ff8c69">云梯 · 0.9km</text>
+          <text x="900" y="180" fill="#ff8c69">飞径 · 1.5km</text>
+          <text x="220" y="500" fill="#7fffd4">花径支线</text>
+          <text x="700" y="555" fill="#7fffd4">溶洞支线</text>
+          <text x="820" y="180" fill="#7fffd4">浮岛支线</text>
+        </g>
+
+        <!-- 节点 -->
+        <g font-family="Cascadia Code, monospace" text-anchor="middle">
+          <!-- P01 -->
+          <circle cx="120" cy="120" r="14" fill="#0b0a1f" stroke="#ff8c69" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="120" y="98" fill="#ff8c69" font-size="13" font-weight="700">P01</text>
+          <text x="120" y="155" fill="#ece6ff" font-size="12">守望者之台</text>
+
+          <!-- P02 -->
+          <circle cx="140" cy="540" r="12" fill="#0b0a1f" stroke="#7fffd4" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="140" y="572" fill="#ece6ff" font-size="12">紫晶花海</text>
+
+          <!-- P03 -->
+          <circle cx="380" cy="360" r="13" fill="#0b0a1f" stroke="#4ecdc4" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="380" y="395" fill="#ece6ff" font-size="12">古木栈道</text>
+
+          <!-- P04 -->
+          <circle cx="450" cy="430" r="13" fill="#0b0a1f" stroke="#4ecdc4" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="450" y="465" fill="#ece6ff" font-size="12">飞瀑流光</text>
+
+          <!-- P05 -->
+          <circle cx="600" cy="420" r="13" fill="#0b0a1f" stroke="#c5a3ff" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="600" y="455" fill="#ece6ff" font-size="12">山村秘境</text>
+
+          <!-- P06 核心 -->
+          <circle cx="720" cy="380" r="20" fill="#0b0a1f" stroke="#c5a3ff" stroke-width="3" filter="url(#glow)"/>
+          <circle cx="720" cy="380" r="28" fill="none" stroke="#c5a3ff" stroke-width="1" opacity=".5"/>
+          <text x="720" y="385" fill="#c5a3ff" font-size="13" font-weight="700">P06</text>
+          <text x="720" y="425" fill="#fff" font-size="13" font-weight="600">万古灵树 · CORE</text>
+
+          <!-- P07 -->
+          <circle cx="880" cy="120" r="14" fill="#0b0a1f" stroke="#ff8c69" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="880" y="98" fill="#ff8c69" font-size="13" font-weight="700">P07</text>
+          <text x="880" y="155" fill="#ece6ff" font-size="12">仙塔远眺</text>
+
+          <!-- P08 -->
+          <circle cx="820" cy="560" r="12" fill="#0b0a1f" stroke="#4ecdc4" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="820" y="592" fill="#ece6ff" font-size="12">云海观景</text>
+
+          <!-- P09 -->
+          <circle cx="960" cy="220" r="13" fill="#0b0a1f" stroke="#ff8c69" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="960" y="200" fill="#ece6ff" font-size="12">灵泉石窟</text>
+
+          <!-- P10 -->
+          <circle cx="940" cy="90" r="12" fill="#0b0a1f" stroke="#c5a3ff" stroke-width="2.5" filter="url(#glow)"/>
+          <text x="980" y="78" fill="#ece6ff" font-size="12" text-anchor="start">浮岛幽境</text>
+        </g>
+
+        <!-- 图例 -->
+        <g font-family="Cascadia Code, monospace" font-size="12" fill="#b8aedb">
+          <circle cx="60"  cy="595" r="6" fill="#0b0a1f" stroke="#ff8c69" stroke-width="2"/>
+          <text   x="76"  y="600">观景</text>
+          <circle cx="140" cy="595" r="6" fill="#0b0a1f" stroke="#4ecdc4" stroke-width="2"/>
+          <text   x="156" y="600">自然</text>
+          <circle cx="220" cy="595" r="6" fill="#0b0a1f" stroke="#c5a3ff" stroke-width="2"/>
+          <text   x="236" y="600">神秘</text>
+          <circle cx="300" cy="595" r="6" fill="#0b0a1f" stroke="#7fffd4" stroke-width="2"/>
+          <text   x="316" y="600">人文 / 支线</text>
+          <line x1="440" y1="595" x2="490" y2="595" stroke="url(#gMain)" stroke-width="3"/>
+          <text x="498" y="600">主环线</text>
+          <line x1="580" y1="595" x2="630" y2="595" stroke="url(#gSide)" stroke-width="2.2" stroke-dasharray="6 4"/>
+          <text x="638" y="600">支线</text>
+        </g>
+      </svg>
+
+      <div class="legend">
+        <span><i style="background:#c5a3ff"></i>神秘类节点</span>
+        <span><i style="background:#4ecdc4"></i>自然类节点</span>
+        <span><i style="background:#ff8c69"></i>观景 / 人文类节点</span>
+        <span><i style="background:#7fffd4"></i>支线入口</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 三、主题路线 -->
+  <section>
+    <div class="section-title">三、主题游览路线</div>
+    <div class="route-list">
+      <div class="route-card">
+        <h3>☀ 晨曦主环线（约 4.5km · 3h）</h3>
+        <div class="duration">叙事基调：苏醒 · 进入 · 见证</div>
+        <div class="route-steps">
+          <span class="step">P01 守望者之台</span>
+          <span class="step arrow">→</span>
+          <span class="step">P03 古木栈道</span>
+          <span class="step arrow">→</span>
+          <span class="step">P04 飞瀑流光</span>
+          <span class="step arrow">→</span>
+          <span class="step">P05 山村秘境</span>
+          <span class="step arrow">→</span>
+          <span class="step">P06 万古灵树</span>
+        </div>
+      </div>
+
+      <div class="route-card">
+        <h3>🌅 黄昏主环线（约 5.2km · 3.5h）</h3>
+        <div class="duration">叙事基调：登高 · 远眺 · 升华</div>
+        <div class="route-steps">
+          <span class="step">P06 万古灵树</span>
+          <span class="step arrow">→</span>
+          <span class="step">P09 灵泉石窟</span>
+          <span class="step arrow">→</span>
+          <span class="step">P07 仙塔远眺</span>
+          <span class="step arrow">→</span>
+          <span class="step">P10 浮岛幽境</span>
+          <span class="step arrow">→</span>
+          <span class="step">P01 守望者之台</span>
+        </div>
+      </div>
+
+      <div class="route-card">
+        <h3>🌿 支线 · 花海小径（约 0.8km · 30min）</h3>
+        <div class="duration">附属体验：低强度 · 拍照打卡</div>
+        <div class="route-steps">
+          <span class="step">P03 古木栈道</span>
+          <span class="step arrow">→</span>
+          <span class="step">P02 紫晶花海</span>
+        </div>
+      </div>
+
+      <div class="route-card">
+        <h3>☁ 支线 · 云海漫步（约 1.1km · 45min）</h3>
+        <div class="duration">附属体验：高视野 · 留白</div>
+        <div class="route-steps">
+          <span class="step">P05 山村秘境</span>
+          <span class="step arrow">→</span>
+          <span class="step">P08 云海观景</span>
+        </div>
+      </div>
+
+      <div class="route-card">
+        <h3>🜂 支线 · 浮岛登天（约 1.6km · 1h）</h3>
+        <div class="duration">附属体验：极限 · 解谜彩蛋</div>
+        <div class="route-steps">
+          <span class="step">P06 万古灵树</span>
+          <span class="step arrow">→</span>
+          <span class="step">P10 浮岛幽境</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 四、规划建议表 -->
+  <section>
+    <div class="section-title">四、生态规划建议</div>
+    <table class="plan-table">
+      <thead>
+        <tr><th>维度</th><th>建议内容</th><th>对应 POI</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>生态保护</td><td>核心区域 P06 设立低干扰缓冲带，限制日承载量 ≤ 800 人</td><td>P06 万古灵树</td></tr>
+        <tr><td>水文系统</td><td>维持瀑布与云海的循环水系，禁止 P04 周边截流</td><td>P04 / P08</td></tr>
+        <tr><td>植被多样</td><td>紫晶花海轮换休耕，保留 30% 野生区域</td><td>P02 / P03</td></tr>
+        <tr><td>人文融合</td><td>山村建筑外观延续古制，限制层高与外立面材料</td><td>P05 山村秘境</td></tr>
+        <tr><td>叙事节点</td><td>灵泉石窟布置传说展示板，作为暗线入口</td><td>P09 灵泉石窟</td></tr>
+        <tr><td>高空奇观</td><td>浮岛区域采用观景平台 + 声光表演结合</td><td>P10 浮岛幽境</td></tr>
+        <tr><td>观景层次</td><td>设置三级观景：低空花海 / 中段瀑布 / 高空仙塔</td><td>P02 / P04 / P07</td></tr>
+        <tr><td>动线分级</td><td>主环线承载主流，支线承载深度体验</td><td>全部</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>
+  © 灵境秘境生态规划 · 基于图中意象生成的 POI 线图方案 · 仅作规划参考
+</footer>
+
+</body>
+</html>

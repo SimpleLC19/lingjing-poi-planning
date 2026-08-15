@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>灵境大陆 · 大场景生态总体规划</title>
+<style>
+  :root {
+    --bg-deep:   #0b0a1f;
+    --bg-mid:    #1a1340;
+    --bg-soft:   #2a1d5e;
+    --accent-1:  #c5a3ff; /* 灵光紫 */
+    --accent-2:  #4ecdc4; /* 灵泉蓝 */
+    --accent-3:  #ff8c69; /* 晚霞橙 */
+    --accent-4:  #7fffd4; /* 生机青 */
+    --accent-5:  #ffd700; /* 守望金 */
+    --accent-6:  #87cefa; /* 云海冰蓝 */
+    --text:      #ece6ff;
+    --text-soft: #b8aedb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background:
+      radial-gradient(ellipse at 15% 8%, rgba(78,205,196,.16), transparent 50%),
+      radial-gradient(ellipse at 85% 85%, rgba(255,140,105,.16), transparent 55%),
+      linear-gradient(180deg, #0b0a1f 0%, #1a1340 55%, #0b0a1f 100%);
+    color: var(--text);
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    min-height: 100vh;
+    line-height: 1.65;
+  }
+  header {
+    padding: 52px 6vw 26px;
+    text-align: center;
+    border-bottom: 1px solid rgba(197,163,255,.18);
+  }
+  header .tag {
+    display: inline-block;
+    padding: 4px 16px;
+    border: 1px solid var(--accent-1);
+    color: var(--accent-1);
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  header h1 {
+    font-size: 40px;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3), var(--accent-6));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 12px;
+  }
+  header p { color: var(--text-soft); font-size: 15px; max-width: 780px; margin: 0 auto; }
+  main { max-width: 1280px; margin: 0 auto; padding: 36px 5vw 80px; }
+  section { margin-bottom: 60px; }
+  .section-title {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 21px; font-weight: 600;
+    color: var(--accent-1);
+    margin-bottom: 8px;
+  }
+  .section-title::before {
+    content: ""; display: inline-block;
+    width: 6px; height: 22px;
+    background: linear-gradient(180deg, var(--accent-1), var(--accent-2));
+    border-radius: 4px;
+  }
+  .section-sub { color: var(--text-soft); font-size: 13px; margin-bottom: 20px; }
+
+  /* 尺度参数条 */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin: 24px 0 8px;
+  }
+  .stat {
+    background: linear-gradient(160deg, rgba(42,29,94,.7), rgba(11,10,31,.7));
+    border: 1px solid rgba(197,163,255,.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat b {
+    display: block;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent-2);
+    font-family: "Cascadia Code", monospace;
+  }
+  .stat span { font-size: 12px; color: var(--text-soft); }
+
+  /* 分区卡片 */
+  .zone-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .zone-card {
+    background: linear-gradient(165deg, rgba(42,29,94,.85), rgba(11,10,31,.85));
+    border: 1px solid rgba(197,163,255,.22);
+    border-radius: 14px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s, border-color .25s;
+  }
+  .zone-card:hover { transform: translateY(-3px); }
+  .zone-card::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle at 85% 0%, var(--zone-glow), transparent 55%);
+    pointer-events: none;
+  }
+  .zone-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .zone-num {
+    font-family: "Cascadia Code", monospace;
+    font-size: 20px; font-weight: 700;
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px;
+    background: rgba(11,10,31,.7);
+    border: 1.5px solid var(--zone-color);
+    color: var(--zone-color);
+  }
+  .zone-name { font-size: 18px; font-weight: 600; }
+  .zone-en { font-size: 11px; color: var(--text-soft); letter-spacing: 1.5px; }
+  .zone-meta {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .badge {
+    font-size: 11px; padding: 2px 8px;
+    border-radius: 4px; border: 1px solid currentColor;
+  }
+  .zone-desc { color: var(--text-soft); font-size: 13px; margin-bottom: 12px; }
+  .zone-pois { font-size: 12px; color: var(--text); }
+  .zone-pois b { color: var(--zone-color); }
+
+  /* POI 总表 */
+  .table-wrap {
+    background: rgba(11,10,31,.6);
+    border: 1px solid rgba(197,163,255,.2);
+    border-radius: 14px; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 860px; }
+  th, td { padding: 10px 14px; text-align: left; font-size: 13px; border-bottom: 1px solid rgba(197,163,255,.1); }
+  th {
+    background: rgba(78,205,196,.08);
+    color: var(--accent-2);
+    font-weight: 600; letter-spacing: 1px;
+    position: sticky; top: 0;
+  }
+  td { color: var(--text-soft); }
+  tr:hover td { background: rgba(197,163,255,.05); color: var(--text); }
+  .pid { font-family: "Cascadia Code", monospace; color: var(--accent-1); font-size: 12px; }
+  .pzone { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 11px; border: 1px solid; }
+  .legend-note { font-size: 12px; color: var(--text-soft); margin-top: 10px; padding: 0 4px; }
+
+  /* 交通网络 */
+  .network-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .net-card {
+    background: linear-gradient(160deg, rgba(42,29,94,.7), rgba(11,10,31,.7));
+    border: 1px solid rgba(78,205,196,.25);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .net-card h3 { font-size: 16px; color: var(--accent-4); margin-bottom: 4px; }
+  .net-card .sub { color: var(--text-soft); font-size: 12px; margin-bottom: 10px; }
+  .net-card p { color: var(--text-soft); font-size: 13px; }
+  .net-card p b { color: var(--text); }
+
+  /* 叙事层级 */
+  .layer-row { display: flex; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+  .layer {
+    flex: 1; min-width: 260px;
+    background: linear-gradient(160deg, rgba(42,29,94,.75), rgba(11,10,31,.75));
+    border: 1px solid rgba(197,163,255,.22);
+    border-left: 4px solid var(--lc);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .layer h3 { font-size: 15px; color: var(--lc); margin-bottom: 6px; }
+  .layer p { color: var(--text-soft); font-size: 13px; }
+  .layer p b { color: var(--text); }
+
+  footer { text-align: center; color: var(--text-soft); padding: 30px 0; font-size: 12px; border-top: 1px solid rgba(197,163,255,.12); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">LARGE-SCALE ECOLOGY · MASTER PLAN</div>
+  <h1>灵境大陆 · 大场景生态总体规划</h1>
+  <p>以「万古灵树」为世界脉心，将秘境扩展为 <b>约 128 km²</b> 的完整生态大陆：<b>7 大生态分区</b>、<b>28 个 POI 节点</b>、<b>12 条跨区通道</b>、<b>3 层叙事深度</b>，构成可持续运营的奇幻生态世界。</p>
+</header>
+
+<main>
+
+  <!-- 一、大场景尺度 -->
+  <section>
+    <div class="section-title">一、大场景总览 · 尺度参数</div>
+    <div class="section-sub">从单一秘境升级为大陆尺度，数字定义"大"在哪里</div>
+    <div class="stat-strip">
+      <div class="stat"><b>128 km²</b><span>大陆总面积</span></div>
+      <div class="stat"><b>7</b><span>生态大分区</span></div>
+      <div class="stat"><b>28</b><span>POI 节点</span></div>
+      <div class="stat"><b>3,200m</b><span>海拔落差（浮岛—洞窟）</span></div>
+      <div class="stat"><b>12</b><span>跨区交通通道</span></div>
+      <div class="stat"><b>5.6km</b><span>最长主环线</span></div>
+      <div class="stat"><b>3</b><span>叙事深度层级</span></div>
+      <div class="stat"><b>1,400m³/s</b><span>水系总流量（灵泉流域）</span></div>
+    </div>
+  </section>
+
+  <!-- 二、七大生态分区 -->
+  <section>
+    <div class="section-title">二、七大生态分区（Zones）</div>
+    <div class="section-sub">以「万古灵树」为世界脉心，六大分区环绕共生，形成完整生态循环</div>
+    <div class="zone-grid">
+      <div class="zone-card" style="--zone-color:#c5a3ff; --zone-glow:rgba(197,163,255,.25)">
+        <div class="zone-head"><div class="zone-num">Z1</div>
+          <div><div class="zone-name">灵脉核心区</div><div class="zone-en">CORE SANCTUM</div></div>
+        </div>
+        <div class="zone-meta"><span class="badge" style="color:#c5a3ff">神秘</span><span class="badge" style="color:#ffd700">圣地</span></div>
+        <div class="zone-desc">大陆心脏：万古灵树根系贯穿整座山脉，灵脉能量从这里流向所有分区。设有低干扰缓冲带，是全世界的生态与叙事原点。</div>
+        <div class="zone-pois"><b>POI</b> · 万古灵树 / 灵脉祭坛 / 圣殿遗迹 / 灵泉石窟</div>
+      </div>
+
+      <div class="zone-card" style="--zone-color:#4ecdc4; --zone-glow:rgba(78,205,196,.22)">
+        <div class="zone-head"><div class="zone-num">Z2</div>
+          <div><div class="zone-name">飞瀑流域区</div><div class="zone-en">CASCADE BASIN</div></div>
+        </div>
+        <div class="zone-meta"><span class="badge" style="color:#4ecdc4">自然</span><span class="badge" style="color:#ff8c69">人文</span></div>
+        <div class="zone-desc">水系统核心：多层蓝色发光瀑布群 + 山腰村落带 + 梯田水系，承担供水、观景与聚落生活，是"活着的"生态人文复合区。</div>
+        <div class="zone-pois"><b>POI</b> · 飞瀑流光 / 山村秘境 / 蓝瀑天梯 / 灵泽湖</div>
+      </div>
+
+      <div class="zone-card" style="--zone-color:#87cefa; --zone-glow:rgba(135,206,250,.2)">
+        <div class="zone-head"><div class="zone-num">Z3</div>
+          <div><div class="zone-name">云海高地区</div><div class="zone-en">CLOUD ALPINE</div></div>
+        </div>
+        <div class="zone-meta"><span class="badge" style="color:#87cefa">自然</span><span class="badge" style="color:#ff8c69">观景</span></div>
+        <div class="zone-desc">海拔 2,000–2,800m 的高山气候带：翻涌云海 + 风化岩峰 + 仙塔遗迹。气候边界带来强烈视觉留白，是"呼吸感"担当。</div>
+        <div class="zone-pois"><b>POI</b> · 云海观景 / 仙塔远眺 / 天风台 / 雪线回廊</div>
+      </div>
+
+      <div class="zone-card" style="--zone-color:#d8b4fe; --zone-glow:rgba(216,180,254,.22)">
+        <div class="zone-head"><div class="zone-num">Z4</div>
+          <div><div class="zone-name">浮空群岛区</div><div class="zone-en">SKY ARCHIPELAGO</div></div>
+        </div>
+        <div class="zone-meta"><span class="badge" style="color:#d8b4fe">神秘</span><span class="badge" style="color:#87cefa">观景</span></div>
+        <div class="zone-desc">悬浮岩体 + 天空生物带，垂直维度奇观。通过浮岛锚链与风舟航线连接，夜晚的浮岛灯光是大陆的"天空星座"。</div>
+        <div class="zone-pois"><b>POI</b> · 浮岛幽境 / 星灯码头 / 风脊巢穴 / 空鲸航道</div>
+      </div>
+
+      <div class="zone-card" style="--zone-color:#7fffd4; --zone-glow:rgba(127,255,212,.2)">
+        <div class="zone-head"><div class="zone-num">Z5</div>
+          <div><div class="zone-name">古林花海带</div><div class="zone-en">ANCIENT BLOOM</div></div>
+        </div>
+        <div class="zone-meta"><span class="badge" style="color:#7fffd4">自然</span><span class="badge" style="color:#4ecdc4">生态保育</span></div>
+        <div class="zone-desc">大陆绿肺：万年古木 + 紫晶花海 + 苔原栈道。四季轮作的花田与生物廊道相连，是生物多样性与生态研学核心区。</div>
+        <div class="zone-pois"><b>POI</b> · 紫晶花海 / 古木栈道 / 苔光湿地 / 守望林线</div>
+      </div>
+
+      <div class="zone-card" style="--zone-color:#ff8c69; --zone-glow:rgba(255,140,105,.2)">
+        <div class="zone-head"><div class="zone-num">Z6</div>
+          <div><div class="zone-name">幽暗洞窟区</div><div class="zone-en">GROTTO UNDERLAND</div></div>
+        </div>
+        <div class="zone-meta"><span class="badge" style="color:#ff8c69">神秘</span><span class="badge" style="color:#c5a3ff">暗线</span></div>
+        <div class="zone-desc">地下 800–1,200m 的溶洞体系：发光菌毯、地下暗河与灵矿脉。承载秘境的传说暗线，是探索型玩家的深度目标区。</div>
+        <div class="zone-pois"><b>POI</b> · 灵泉石窟 / 荧光菌谷 / 地下灵河 / 矿脉回廊</div>
+      </div>
+
+      <div class="zone-card" style="--zone-color:#ffd700; --zone-glow:rgba(255,215,0,.18)">
+        <div class="zone-head"><div class="zone-num">Z7</div>
+          <div><div class="zone-name">边缘守望带</div><div class="zone-en">FRONTIER WATCH</div></div>
+        </div>
+        <div class="zone-meta"><span class="badge" style="color:#ffd700">人文</span><span class="badge" style="color:#87cefa">观景</span></div>
+        <div class="zone-desc">大陆边界：守望者之台 + 古长城 + 结界门扉。第一印象的观景入口，也是大陆与外界之间的缓冲与仪式感地带。</div>
+        <div class="zone-pois"><b>POI</b> · 守望者之台 / 结界门扉 / 古长城 / 晨昏广场</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 三、大地图连线图 -->
+  <section>
+    <div class="section-title">三、大场景分区连线图（宏观）</div>
+    <div class="section-sub">七大分区 × 十二通道 · 俯视大陆结构</div>
+    <div class="table-wrap" style="padding:10px; overflow-x:auto">
+      <svg viewBox="0 0 1100 720" width="100%" xmlns="http://www.w3.org/2000/svg" style="min-width:840px">
+        <defs>
+          <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#c5a3ff"/><stop offset="1" stop-color="#4ecdc4"/>
+          </linearGradient>
+          <filter id="glow2"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+
+        <!-- 分区色块 -->
+        <g stroke="rgba(197,163,255,.18)" stroke-width="1">
+          <!-- Z5 古林花海（西北） -->
+          <rect x="150" y="80"  width="250" height="190" rx="26" fill="rgba(127,255,212,.07)"/>
+          <text x="275" y="130" text-anchor="middle" fill="#7fffd4" font-size="17" font-weight="700" font-family="Cascadia Code, monospace">Z5 古林花海</text>
+          <text x="275" y="155" text-anchor="middle" fill="#b8aedb" font-size="12" font-family="Cascadia Code, monospace">花田 · 古林 · 湿地</text>
+          <!-- Z3 云海高地（东北） -->
+          <rect x="700" y="70"  width="260" height="190" rx="26" fill="rgba(135,206,250,.07)"/>
+          <text x="830" y="120" text-anchor="middle" fill="#87cefa" font-size="17" font-weight="700" font-family="Cascadia Code, monospace">Z3 云海高地</text>
+          <text x="830" y="145" text-anchor="middle" fill="#b8aedb" font-size="12" font-family="Cascadia Code, monospace">云海 · 仙塔 · 雪线</text>
+          <!-- Z4 浮空群岛（东） -->
+          <rect x="860" y="300" width="200" height="180" rx="26" fill="rgba(216,180,254,.07)"/>
+          <text x="960" y="350" text-anchor="middle" fill="#d8b4fe" font-size="17" font-weight="700" font-family="Cascadia Code, monospace">Z4 浮空群岛</text>
+          <text x="960" y="375" text-anchor="middle" fill="#b8aedb" font-size="12" font-family="Cascadia Code, monospace">浮岛 · 空鲸</text>
+          <!-- Z2 飞瀑流域（东南） -->
+          <rect x="700" y="520" width="260" height="160" rx="26" fill="rgba(78,205,196,.07)"/>
+          <text x="830" y="565" text-anchor="middle" fill="#4ecdc4" font-size="17" font-weight="700" font-family="Cascadia Code, monospace">Z2 飞瀑流域</text>
+          <text x="830" y="590" text-anchor="middle" fill="#b8aedb" font-size="12" font-family="Cascadia Code, monospace">瀑布 · 山村 · 灵泽湖</text>
+          <!-- Z6 幽暗洞窟（南） -->
+          <rect x="380" y="560" width="250" height="140" rx="26" fill="rgba(255,140,105,.07)"/>
+          <text x="505" y="605" text-anchor="middle" fill="#ff8c69" font-size="17" font-weight="700" font-family="Cascadia Code, monospace">Z6 幽暗洞窟</text>
+          <text x="505" y="630" text-anchor="middle" fill="#b8aedb" font-size="12" font-family="Cascadia Code, monospace">地下 · 暗河 · 矿脉</text>
+          <!-- Z7 边缘守望（西） -->
+          <rect x="70"  y="330" width="220" height="170" rx="26" fill="rgba(255,215,0,.06)"/>
+          <text x="180" y="380" text-anchor="middle" fill="#ffd700" font-size="17" font-weight="700" font-family="Cascadia Code, monospace">Z7 边缘守望</text>
+          <text x="180" y="405" text-anchor="middle" fill="#b8aedb" font-size="12" font-family="Cascadia Code, monospace">结界 · 长城 · 广场</text>
+        </g>
+
+        <!-- 跨区通道 -->
+        <g fill="none" stroke-width="2.4" stroke-linecap="round" filter="url(#glow2)">
+          <path d="M 330,220 C 400,260 470,280 520,300" stroke="#7fffd4"/>
+          <path d="M 700,200 C 660,240 620,270 560,290" stroke="#87cefa"/>
+          <path d="M 560,290 C 640,300 720,320 800,360" stroke="#c5a3ff" stroke-dasharray="8 5"/>
+          <path d="M 560,290 C 600,340 640,400 680,470" stroke="#c5a3ff"/>
+          <path d="M 860,430 C 830,470 800,500 770,520" stroke="#d8b4fe"/>
+          <path d="M 700,550 C 640,560 580,580 520,600" stroke="#4ecdc4"/>
+          <path d="M 500,600 C 430,540 380,480 340,420" stroke="#ff8c69"/>
+          <path d="M 290,410 C 330,390 380,360 420,330" stroke="#ffd700"/>
+          <path d="M 290,420 C 330,470 380,510 430,560" stroke="#ffd700" stroke-dasharray="8 5"/>
+        </g>
+
+        <!-- 核心脉心 -->
+        <circle cx="545" cy="300" r="58" fill="rgba(197,163,255,.1)" stroke="url(#core)" stroke-width="3" filter="url(#glow2)"/>
+        <circle cx="545" cy="300" r="42" fill="rgba(11,10,31,.9)" stroke="#c5a3ff" stroke-width="2"/>
+        <text x="545" y="305" text-anchor="middle" fill="#c5a3ff" font-size="14" font-weight="700" font-family="Cascadia Code, monospace">Z1</text>
+        <text x="545" y="250" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">万古灵树 · 世界脉心</text>
+
+        <!-- 通道标签 -->
+        <g fill="#b8aedb" font-size="11" font-family="Cascadia Code, monospace">
+          <text x="330" y="250" transform="rotate(-12 330 250)" fill="#7fffd4">花径 · 天桥</text>
+          <text x="700" y="218" fill="#87cefa">雪线回廊</text>
+          <text x="590" y="330" fill="#c5a3ff">风舟航线</text>
+          <text x="610" y="440" fill="#c5a3ff">灵脉栈道</text>
+          <text x="800" y="500" fill="#d8b4fe">锚链空桥</text>
+          <text x="640" y="585" fill="#4ecdc4">蓝瀑天梯</text>
+          <text x="430" y="565" fill="#ff8c69">地下灵河</text>
+          <text x="330" y="380" fill="#ffd700">结界门扉</text>
+          <text x="360" y="520" fill="#ffd700">长城暗道</text>
+        </g>
+
+        <!-- 图例 -->
+        <g font-family="Cascadia Code, monospace" font-size="12" fill="#b8aedb">
+          <circle cx="60" cy="682" r="7" fill="rgba(11,10,31,.9)" stroke="#c5a3ff" stroke-width="2"/>
+          <text x="76" y="687">核心脉心</text>
+          <line x1="180" y1="682" x2="228" y2="682" stroke="#7fffd4" stroke-width="2.6"/>
+          <text x="236" y="687">主通道</text>
+          <line x1="330" y1="682" x2="378" y2="682" stroke="#c5a3ff" stroke-width="2.4" stroke-dasharray="8 5"/>
+          <text x="386" y="687">空中航线</text>
+        </g>
+      </svg>
+    </div>
+    <div class="legend-note">◎ 主通道以生态廊道贯穿各分区；空中航线（虚线）连接浮空群岛与核心区；所有分区最终汇聚于 Z1 万古灵树脉心。</div>
+  </section>
+
+  <!-- 四、POI 总表 -->
+  <section>
+    <div class="section-title">四、28 个 POI 节点总表</div>
+    <div class="section-sub">编号规则：P + 分区号 + 序号（如 P5-2 为古林花海带第 2 号节点）</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>编号</th><th>节点名称</th><th>所属分区</th><th>类型</th><th>生态 / 功能定位</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="pid">P1-1</td><td>万古灵树</td><td><span class="pzone" style="color:#c5a3ff;border-color:#c5a3ff">Z1 灵脉核心</span></td><td>核心地标</td><td>世界脉心，能量与叙事原点，限流 ≤800人/日</td></tr>
+          <tr><td class="pid">P1-2</td><td>灵脉祭坛</td><td><span class="pzone" style="color:#c5a3ff;border-color:#c5a3ff">Z1 灵脉核心</span></td><td>仪式节点</td><td>季节性灵力潮汐观测与祭祀文化</td></tr>
+          <tr><td class="pid">P1-3</td><td>圣殿遗迹</td><td><span class="pzone" style="color:#c5a3ff;border-color:#c5a3ff">Z1 灵脉核心</span></td><td>考古遗迹</td><td>大陆传说与历史叙事的主展场</td></tr>
+          <tr><td class="pid">P1-4</td><td>灵泉石窟</td><td><span class="pzone" style="color:#c5a3ff;border-color:#c5a3ff">Z1 灵脉核心</span></td><td>神秘入口</td><td>通往地下世界的玄关，暗线起点</td></tr>
+          <tr><td class="pid">P2-1</td><td>飞瀑流光</td><td><span class="pzone" style="color:#4ecdc4;border-color:#4ecdc4">Z2 飞瀑流域</span></td><td>水景奇观</td><td>多层蓝色发光瀑布，声光核心体验</td></tr>
+          <tr><td class="pid">P2-2</td><td>山村秘境</td><td><span class="pzone" style="color:#4ecdc4;border-color:#4ecdc4">Z2 飞瀑流域</span></td><td>聚落人文</td><td>休整补给中心，民居文化展示</td></tr>
+          <tr><td class="pid">P2-3</td><td>蓝瀑天梯</td><td><span class="pzone" style="color:#4ecdc4;border-color:#4ecdc4">Z2 飞瀑流域</span></td><td>交通枢纽</td><td>垂直交通：连接流域与核心区的瀑布栈桥</td></tr>
+          <tr><td class="pid">P2-4</td><td>灵泽湖</td><td><span class="pzone" style="color:#4ecdc4;border-color:#4ecdc4">Z2 飞瀑流域</span></td><td>水域生态</td><td>淡水湿地，候鸟驿站与水生态监测点</td></tr>
+          <tr><td class="pid">P3-1</td><td>云海观景</td><td><span class="pzone" style="color:#87cefa;border-color:#87cefa">Z3 云海高地</span></td><td>高台观景</td><td>最佳日出云海视角，留白呼吸带</td></tr>
+          <tr><td class="pid">P3-2</td><td>仙塔远眺</td><td><span class="pzone" style="color:#87cefa;border-color:#87cefa">Z3 云海高地</span></td><td>文化地标</td><td>古代天文塔，黄昏线的眺望终点</td></tr>
+          <tr><td class="pid">P3-3</td><td>天风台</td><td><span class="pzone" style="color:#87cefa;border-color:#87cefa">Z3 云海高地</span></td><td>极限观景</td><td>悬崖玻璃平台，风感交互装置</td></tr>
+          <tr><td class="pid">P3-4</td><td>雪线回廊</td><td><span class="pzone" style="color:#87cefa;border-color:#87cefa">Z3 云海高地</span></td><td>生态过渡带</td><td>高山草甸—雪线生态垂直带示范</td></tr>
+          <tr><td class="pid">P4-1</td><td>浮岛幽境</td><td><span class="pzone" style="color:#d8b4fe;border-color:#d8b4fe">Z4 浮空群岛</span></td><td>空中奇观</td><td>主浮岛群，夜灯星空联动演出</td></tr>
+          <tr><td class="pid">P4-2</td><td>星灯码头</td><td><span class="pzone" style="color:#d8b4fe;border-color:#d8b4fe">Z4 浮空群岛</span></td><td>交通枢纽</td><td>风舟起降平台，空中航线中转站</td></tr>
+          <tr><td class="pid">P4-3</td><td>风脊巢穴</td><td><span class="pzone" style="color:#d8b4fe;border-color:#d8b4fe">Z4 浮空群岛</span></td><td>动物栖息</td><td>天空生物繁殖保育点，禁止进入核心巢</td></tr>
+          <tr><td class="pid">P4-4</td><td>空鲸航道</td><td><span class="pzone" style="color:#d8b4fe;border-color:#d8b4fe">Z4 浮空群岛</span></td><td>巡游体验</td><td>风舟环岛巡游，垂直观景动线</td></tr>
+          <tr><td class="pid">P5-1</td><td>紫晶花海</td><td><span class="pzone" style="color:#7fffd4;border-color:#7fffd4">Z5 古林花海</span></td><td>花田生态</td><td>四季轮作花田，30% 保留野生区</td></tr>
+          <tr><td class="pid">P5-2</td><td>古木栈道</td><td><span class="pzone" style="color:#7fffd4;border-color:#7fffd4">Z5 古林花海</span></td><td>线性廊道</td><td>大陆主脊栈道，生物廊道串联各区</td></tr>
+          <tr><td class="pid">P5-3</td><td>苔光湿地</td><td><span class="pzone" style="color:#7fffd4;border-color:#7fffd4">Z5 古林花海</span></td><td>湿地生态</td><td>发光苔藓湿地，夜游生态研学点</td></tr>
+          <tr><td class="pid">P5-4</td><td>守望林线</td><td><span class="pzone" style="color:#7fffd4;border-color:#7fffd4">Z5 古林花海</span></td><td>生态边界</td><td>古林与花海的分界线，防火瞭望塔</td></tr>
+          <tr><td class="pid">P6-1</td><td>荧光菌谷</td><td><span class="pzone" style="color:#ff8c69;border-color:#ff8c69">Z6 幽暗洞窟</span></td><td>地下生态</td><td>发光菌毯峡谷，地下生物圈展示</td></tr>
+          <tr><td class="pid">P6-2</td><td>地下灵河</td><td><span class="pzone" style="color:#ff8c69;border-color:#ff8c69">Z6 幽暗洞窟</span></td><td>水路暗线</td><td>地下漂流线，串联洞窟与流域水循环</td></tr>
+          <tr><td class="pid">P6-3</td><td>矿脉回廊</td><td><span class="pzone" style="color:#ff8c69;border-color:#ff8c69">Z6 幽暗洞窟</span></td><td>资源遗迹</td><td>废弃灵矿历史展示 + 探险解谜</td></tr>
+          <tr><td class="pid">P7-1</td><td>守望者之台</td><td><span class="pzone" style="color:#ffd700;border-color:#ffd700">Z7 边缘守望</span></td><td>入口地标</td><td>大陆第一印象，全景瞭望起点</td></tr>
+          <tr><td class="pid">P7-2</td><td>结界门扉</td><td><span class="pzone" style="color:#ffd700;border-color:#ffd700">Z7 边缘守望</span></td><td>仪式门户</td><td>进入秘境的大门，欢迎仪式场</td></tr>
+          <tr><td class="pid">P7-3</td><td>古长城</td><td><span class="pzone" style="color:#ffd700;border-color:#ffd700">Z7 边缘守望</span></td><td>历史防御</td><td>城墙遗址观光带，连接 Z5/Z6 的暗道</td></tr>
+          <tr><td class="pid">P7-4</td><td>晨昏广场</td><td><span class="pzone" style="color:#ffd700;border-color:#ffd700">Z7 边缘守望</span></td><td>集散枢纽</td><td>游客集散与活动主广场，交通起始点</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 五、跨区交通网络 -->
+  <section>
+    <div class="section-title">五、跨区交通网络（12 条通道）</div>
+    <div class="section-sub">大场景必须解决"动线效率"——四类交通形态构成闭环</div>
+    <div class="network-grid">
+      <div class="net-card">
+        <h3>🌉 天桥栈道</h3>
+        <div class="sub">陆地主线 · 覆盖 Z1/Z2/Z5/Z7</div>
+        <p><b>花径天桥</b>（Z5→Z1）· <b>蓝瀑天梯</b>（Z2→Z1）· <b>灵脉栈道</b>（Z1→Z2）· <b>结界门扉</b>（Z7→Z5）</p>
+      </div>
+      <div class="net-card">
+        <h3>⛵ 风舟航线</h3>
+        <div class="sub">空中主线 · 覆盖 Z3/Z4/Z1</div>
+        <p><b>风舟航线</b>（Z4→Z1，跨空海）· <b>锚链空桥</b>（Z4→Z3）· <b>雪线回廊</b>（Z3→Z1）</p>
+      </div>
+      <div class="net-card">
+        <h3>🌊 水路系统</h3>
+        <div class="sub">地下水系 · 覆盖 Z2/Z6</div>
+        <p><b>地下灵河</b>（Z6→Z2，暗河漂流）· <b>灵泽湖水道</b>（Z2 内部环线）</p>
+      </div>
+      <div class="net-card">
+        <h3>🗝 暗道秘境</h3>
+        <div class="sub">探索支线 · 覆盖 Z6/Z7/Z5</div>
+        <p><b>长城暗道</b>（Z7→Z6）· <b>矿脉回廊</b>（Z6 内部）· <b>荧光菌谷</b>（Z6→Z1 应急口）</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 六、叙事三层 -->
+  <section>
+    <div class="section-title">六、叙事与探索深度（三层结构）</div>
+    <div class="section-sub">从"看见"到"沉浸"再到"发现"，层层递进的设计逻辑</div>
+    <div class="layer-row">
+      <div class="layer" style="--lc:#7fffd4">
+        <h3>表层 · 看见（First Sight）</h3>
+        <p>面向大众的观景主线：<b>Z7 晨昏广场 → Z5 花海 → Z2 山村 → Z1 神树</b>。低门槛、高景观密度，2–4 小时可完成，覆盖 70% 游客。</p>
+      </div>
+      <div class="layer" style="--lc:#4ecdc4">
+        <h3>中层 · 沉浸（Immersion）</h3>
+        <p>面向深度游客的体验主线：<b>Z3 云海 → Z4 浮岛 → 风舟夜航 → Z1 祭坛</b>。加入互动装置、声光表演、夜间星空联动，1 日行程。</p>
+      </div>
+      <div class="layer" style="--lc:#ff8c69">
+        <h3>内层 · 发现（Discovery）</h3>
+        <p>面向探索玩家的暗线主线：<b>Z1 石窟 → Z6 地下灵河 → 矿脉回廊 → 荧光菌谷</b>。解谜、传说、隐藏叙事，需提前预约，限流保护。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 七、生态开发平衡 -->
+  <section>
+    <div class="section-title">七、生态保护 × 开发平衡</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>分区</th><th>开发强度</th><th>核心保护策略</th><th>容量上限</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Z1 灵脉核心</td><td>低强度</td><td>缓冲带禁行，灵树根系区全封闭监测</td><td>800 人/日</td></tr>
+          <tr><td>Z2 飞瀑流域</td><td>中高强度</td><td>截流禁令，梯田水利沿用古法</td><td>6,000 人/日</td></tr>
+          <tr><td>Z3 云海高地</td><td>中强度</td><td>雪线以上禁止建设，观景台架空</td><td>3,500 人/日</td></tr>
+          <tr><td>Z4 浮空群岛</td><td>中强度</td><td>核心巢穴禁入，风舟限班次降噪</td><td>2,000 人/日</td></tr>
+          <tr><td>Z5 古林花海</td><td>高强度</td><td>花田轮作，保留 30% 野生区，栈道架空</td><td>8,000 人/日</td></tr>
+          <tr><td>Z6 幽暗洞窟</td><td>极低强度</td><td>地下生物圈隔离，预约制限流</td><td>300 人/日</td></tr>
+          <tr><td>Z7 边缘守望</td><td>高强度</td><td>集散枢纽，零生态敏感区</td><td>12,000 人/日</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  © 灵境大陆大场景总体规划 · 基于生态 POI 线图方案的宏观扩展 · 规划参考 v1.0
+</footer>
+
+</body>
+</html>
